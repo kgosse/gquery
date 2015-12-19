@@ -4,7 +4,7 @@
     var q;
 
     var gQ = function(selector, context){
-        return q(selector);
+        return q.query(selector, context);
     };
     gQ.loadJS = function(path, callback){
         var js = doc.createElement('script');
@@ -49,18 +49,28 @@
 
     gQ.ready(function(){
         if(doc.querySelectorAll && doc.querySelectorAll("body:first-of-type")){
-            q = function(parm){
-                return doc.querySelectorAll(parm);
-            };
+            q = new NativeQuery();
             gQ.start();
         }
         else{
             gQ.loadJS('js/sizzle.min.js', function(){
-                q = Sizzle;
+                q = new SizzleAdapter(Sizzle);
                 gQ.start();
             });
         }
     });
+
+    NativeQuery = function(){};
+    NativeQuery.prototype.query = function(selector, context){
+        context = context || doc;
+        return context.querySelectorAll(selector);
+    };
+
+    SizzleAdapter = function(lib){this.lib=lib;};
+    SizzleAdapter.prototype.query = function(selector, context){
+        context = context || doc;
+        return this.lib(selector, context);
+    };
 
     if(!scope.gQ)
         scope.gQ = gQ;
