@@ -48,7 +48,10 @@
 
 
     gQ.ready(function(){
-        if(doc.querySelectorAll && doc.querySelectorAll("body:first-of-type")){
+        if('jQuery' in scope){
+            q = new JQueryAdapter(scope.jQuery);
+        }
+        else if(doc.querySelectorAll && doc.querySelectorAll("body:first-of-type")){
             q = new NativeQuery();
             gQ.start();
         }
@@ -71,6 +74,13 @@
         context = context || doc;
         return this.lib(selector, context);
     };
+    JQueryAdapter = function(lib){this.lib=lib;};
+    JQueryAdapter.prototype.query = function(selector, context){
+        context = context || doc;
+        return this.lib(selector, context).get();
+    };
+
+
 
     if(!scope.gQ)
         scope.gQ = gQ;
