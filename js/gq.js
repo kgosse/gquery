@@ -48,7 +48,6 @@
             doc.addEventListener('DOMContentLoaded', function(){
                 console.log("DOM is loaded");
                 isReady = true;
-                fun();
             });
         }
 
@@ -62,24 +61,44 @@
 
     gQ.ready(function(){
         if('jQuery' in scope){
-            q = new JQueryAdapter(scope.jQuery, doc);
+            q = QueryFacade.create(JQueryAdapter, scope.jQuery, doc);
         }
         else if(doc.querySelectorAll && doc.querySelectorAll("body:first-of-type")){
-            q = new NativeQuery(doc);
+            q = QueryFacade.create(NativeQuery, null, doc);
             gQ.start();
         }
         else{
             gQ.loadJS('js/sizzle.min.js', function(){
-                q = new SizzleAdapter(Sizzle);
+                q = QueryFacade.create(SizzleAdapter, Sizzle, doc);
                 gQ.start();
             });
         }
     });
 
-    NativeQuery = function(context){this.context = context;};
+    QueryFacade = function(adapter){
+        this.adapter = adapter;
+    };
+
+    QueryFacade.prototype.dom = function(){
+        return this.adapter.context;
+    };
+
+    QueryFacade.create = function(adapter, lib, context){
+        return new QueryFacade(new adapter(lib, context));
+    };
+
+    QueryFacade.prototype.query = function(selector, context){
+        return new QueryFacade(this.adapter.query(selector, context));
+    };
+
+    QueryFacade.prototype.text = function(value){
+        return this.adapter.text(value);
+    };
+
+    NativeQuery = function(lib, context){this.context = context;};
     NativeQuery.prototype.query = function(selector, context){
         context = context || this.context;
-        return new NateiveQuery(gQ.toArray(context.querySelectorAll(selector)));
+        return new NativeQuery(null, gQ.toArray(context.querySelectorAll(selector)));
     };
     NativeQuery.prototype.text = function(value){
         var innerText = (this.context[0].innerText === undefined) ? 'textContent' : 'innerText';
@@ -87,10 +106,13 @@
             this.context[item][innerText] = value;
         return (value);
     };
-    SizzleAdapter = function(lib){this.lib=lib;};
+    SizzleAdapter = function(lib, context){
+        this.lib = lib;
+        this.context = context;
+    };
     SizzleAdapter.prototype.query = function(selector, context){
-        context = context || doc;
-        return gQ.toArray(this.lib(selector, context));
+        context = context || this.context;
+        return new SizzleAdapter(this.lib, gQ.toArray(this.lib(selector, context)));
     };
 
     JQueryAdapter = function(lib, context){
