@@ -1,4 +1,4 @@
 
 gQ.start = function(){
-    console.log(gQ('.article').dom());
+    console.log(gQ('.article'));
 };
