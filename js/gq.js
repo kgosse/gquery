@@ -146,6 +146,7 @@
             var index = 0;
             var sensitivity = 100;
             var methods = {};
+            var api;
 
             function add(interval, times, callback, name){
                 var realInterval = interval - interval % sensitivity;
@@ -166,15 +167,17 @@
             function start(){
                 if (!intervalID)
                     intervalID = setInterval(runInterval, sensitivity);
+            }
+
+            function runInterval(){
+                api.dispatchEvent({type: 'pretick', target: api});
+                currentInterval = currentInterval % maxInterval;
+                currentInterval += sensitivity;
 
                 for (var interval in  methods)
                     if ((currentInterval % interval) == 0)
                         processIntervalGroup(methods[interval]);
-            }
-
-            function runInterval(){
-                currentInterval = currentInterval % maxInterval;
-                currentInterval += sensitivity;
+                api.dispatchEvent({type: 'tick', target: api});
             }
 
             function processIntervalGroup(group){
@@ -193,7 +196,10 @@
                 }
             }
 
-            return {add: add};
+            api = {add: add};
+            EventDispatcher(api);
+
+            return api;
         }
 
         return {
@@ -225,17 +231,20 @@
                 }
             }
         };
+
+        o.removeEvent = function(type, listener){
+            var lt = list[type];
+            var index = -1;
+
+            if (lt){
+                index = lt.indexOf(listener);
+                if (index > -1)
+                    lt.splice(index, 1);
+            }
+        }
     }
 
-    var o = {};
-    EventDispatcher(o);
 
-    o.addEvent('tick', function(e){
-        console.log("a tick just happend", e.target, e.type);
-        console.log(this == o, this, o);
-    });
-
-    o.dispatchEvent({type: 'tick', target: o});
 
     if(!scope.gQ)
         scope.gQ = gQ;
