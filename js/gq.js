@@ -148,7 +148,7 @@
                 maxInterval = Math.max(realInterval, maxInterval);
                 name = name || (++index);
 
-                if(methods[realInterval])
+                if(!methods[realInterval])
                     methods[realInterval] = {};
                 methods[realInterval][name] = {
                     times: times,
@@ -160,7 +160,7 @@
             }
 
             function start(){
-                if (intervalID)
+                if (!intervalID)
                     intervalID = setInterval(runInterval, sensitivity);
 
                 for (var interval in  methods)
@@ -171,6 +171,22 @@
             function runInterval(){
                 currentInterval = currentInterval % maxInterval;
                 currentInterval += sensitivity;
+            }
+
+            function processIntervalGroup(group){
+                var item;
+                for (var name in group){
+                    item = group[name];
+
+                    item.callback();
+
+                    if (item.times == 0){
+                        delete  group[name];
+                    }
+                    else{
+                        --item.times;
+                    }
+                }
             }
 
             return {add: add};
@@ -184,6 +200,10 @@
             }
         }
     })();
+
+    Ticker.getInstance().add(100, 4, function(){
+        console.log("I'm called");
+    });
 
     if(!scope.gQ)
         scope.gQ = gQ;
