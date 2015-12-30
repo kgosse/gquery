@@ -132,6 +132,27 @@
     };
 
 
+    var Ticker = (function(){
+        var instance;
+
+        function create(){
+
+            function add(interval, times, callback, name){
+
+            }
+
+            return {add: add};
+        }
+
+        return {
+            getInstance: function(){
+                if (!instance)
+                    instance = create();
+                return instance;
+            }
+        }
+    })();
+
     if(!scope.gQ)
         scope.gQ = gQ;
     else
