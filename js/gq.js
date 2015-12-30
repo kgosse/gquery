@@ -136,8 +136,26 @@
         var instance;
 
         function create(){
+            var index = 0;
+            var sensitivity = 100;
+            var methods = {};
 
             function add(interval, times, callback, name){
+                var realInterval = interval - interval % sensitivity;
+                name = name || (++index);
+
+                if(methods[realInterval])
+                    methods[realInterval] = {};
+                methods[realInterval][name] = {
+                    times: times,
+                    callback: callback,
+                    interval: interval
+                };
+
+                start();
+            }
+
+            function start(){
 
             }
 
