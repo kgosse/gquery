@@ -40,6 +40,10 @@
         return version;
     };
 
+    gQ.ticker = function(){
+        return Ticker.getInstance();
+    };
+
     gQ.ready = function(fun){
         var last = scope.onload;
         var isReady = false;
@@ -201,9 +205,6 @@
         }
     })();
 
-    Ticker.getInstance().add(100, 4, function(){
-        console.log("I'm called");
-    });
 
     if(!scope.gQ)
         scope.gQ = gQ;
