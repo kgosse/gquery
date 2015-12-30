@@ -136,12 +136,16 @@
         var instance;
 
         function create(){
+            var intervalID;
+            var currentInterval = 0;
+            var maxInterval = 0;
             var index = 0;
             var sensitivity = 100;
             var methods = {};
 
             function add(interval, times, callback, name){
                 var realInterval = interval - interval % sensitivity;
+                maxInterval = Math.max(realInterval, maxInterval);
                 name = name || (++index);
 
                 if(methods[realInterval])
@@ -156,7 +160,17 @@
             }
 
             function start(){
+                if (intervalID)
+                    intervalID = setInterval(runInterval, sensitivity);
 
+                for (var interval in  methods)
+                    if ((currentInterval % interval) == 0)
+                        processIntervalGroup(methods[interval]);
+            }
+
+            function runInterval(){
+                currentInterval = currentInterval % maxInterval;
+                currentInterval += sensitivity;
             }
 
             return {add: add};
